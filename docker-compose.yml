@@ -1,0 +1,36 @@
+version: "3"
+services:
+
+  mysqldb:
+    image: mysql:5.7
+    ports:
+      - 3306:3306
+    restart: unless-stopped
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: stationSki
+    volumes:
+      - db:/var/lib/mysql
+
+  backend:
+    image: malekbenrabah/stationsky
+    ports:
+      - 8089:8089
+    restart: on-failure
+    depends_on:
+      - mysqldb
+    environment:
+      SPRING_APPLICATION_JSON: '{
+        "spring.datasource.url"  : "jdbc:mysql://mysqldb:3306/stationSki?createDatabaseIfNotExist=true&useUnicode=true&useJDBCCompliantTimezoneShift=true&useLegacyDatetimeCode=false&serverTimezone=UTC",
+        "spring.jpa.show-sql" : true,
+        "spring.jpa.hibernate.ddl-auto" : "update",
+        "spring.jpa.properties.hibernate.dialect" : "org.hibernate.dialect.MySQL5InnoDBDialect",
+        "spring.datasource.username" : "root",
+        "spring.datasource.password" : "root"
+       
+      }'
+    stdin_open: true
+    tty: true
+
+volumes:
+  db:
